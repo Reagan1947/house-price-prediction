@@ -1,0 +1,39 @@
+<svg width="1200" height="1600" viewBox="0 0 1200 1600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky" x1="600" y1="0" x2="600" y2="1600" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#58A8F5"/>
+      <stop offset="1" stop-color="#0F2233"/>
+    </linearGradient>
+    <linearGradient id="light" x1="470" y1="605" x2="850" y2="905" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EFF2F4"/>
+      <stop offset="1" stop-color="#AFC0D1"/>
+    </linearGradient>
+    <linearGradient id="shadow" x1="450" y1="670" x2="790" y2="970" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0E1D2A"/>
+      <stop offset="1" stop-color="#050A10"/>
+    </linearGradient>
+    <linearGradient id="garden" x1="600" y1="1100" x2="600" y2="1600" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#38653A"/>
+      <stop offset="1" stop-color="#0E2410"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="1600" fill="url(#sky)"/>
+  <rect y="1080" width="1200" height="520" fill="url(#garden)"/>
+
+  <polygon points="100,820 970,930 1120,740 300,620" fill="url(#light)"/>
+  <polygon points="210,740 1020,860 1060,760 260,640" fill="#F8FAFC"/>
+  <polygon points="190,880 860,990 870,1180 80,1080" fill="url(#shadow)"/>
+
+  <rect x="220" y="760" width="130" height="170" fill="#1C3F5B"/>
+  <rect x="238" y="778" width="95" height="130" fill="#5B8FB2"/>
+
+  <circle cx="80" cy="1500" r="140" fill="#2B4E2E"/>
+  <circle cx="240" cy="1450" r="160" fill="#3D6A3F"/>
+  <circle cx="430" cy="1510" r="130" fill="#2D5531"/>
+  <circle cx="660" cy="1490" r="170" fill="#2F5E34"/>
+  <circle cx="860" cy="1525" r="145" fill="#2A4F2D"/>
+  <circle cx="1040" cy="1460" r="170" fill="#37643A"/>
+
+  <rect x="0" y="0" width="1200" height="1600" fill="url(#sky)" opacity="0.2"/>
+</svg>

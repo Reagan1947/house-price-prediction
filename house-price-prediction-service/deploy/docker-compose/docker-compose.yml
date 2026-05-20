@@ -1,0 +1,42 @@
+# 使用外部 MySQL / Redis：在 .env.server 中配置 DATABASE_* 与 REDIS_*，勿再启动本地数据库容器。
+# 后端由 gunicorn 直接监听 8001，通过内网 IP:8001 或 DNS 解析到内网 IP 后访问，无需 nginx。
+services:
+  ftm_server:
+    build:
+      context: ../../
+      dockerfile: Dockerfile
+    # 生产部署由 CI 注入 IMAGE；本地未设置时默认 ftm_server:latest
+    image: ${IMAGE}
+    container_name: house-price-prediction-service
+    restart: always
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env.server
+    volumes:
+      - ftm_static:/ftm/backend/static
+      - ftm_model_artifacts:/ftm/model-artifacts
+    networks:
+      - ftm_network
+    command:
+      - bash
+      - -c
+      - |
+        wait-for-it -s "$$DATABASE_HOST:$$DATABASE_PORT" -s "$$REDIS_HOST:$$REDIS_PORT" -t 300
+        supervisord -c /etc/supervisor/supervisord.conf
+        supervisorctl restart
+
+networks:
+  ftm_network:
+    name: ftm_network
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.10.10.0/24
+
+volumes:
+  ftm_static:
+    name: ftm_static
+  ftm_model_artifacts:
+    name: ftm_model_artifacts

@@ -1,0 +1,48 @@
+# 部署相关文件均在本 deploy/ 目录：
+#   nginx/          Nginx 片段配置
+#   certs/          已有 TLS 证书（文件名须与 nginx/20-https.conf 中 ssl_certificate 一致，勿提交仓库）
+#
+# HTTPS：证书放入 deploy/certs/，配置 nginx/20-https.conf（可由 20-https.conf.example 复制并改路径）；
+# 取消下方 TLS 两行注释；HTTP 跳转 HTTPS 见 nginx/10-http.conf。
+#
+# 在仓库根目录：docker compose up -d
+# 仅在本目录：docker compose -f docker-compose.yml up -d   （或 cd deploy 后 compose）
+
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    # 流水线构建并推送后，在服务器 .env 中设置 WEB_IMAGE=ghcr.io/<owner>/<repo>:<tag>，在仓库根执行
+    # docker compose pull && docker compose up -d --no-build
+    image: ${IMAGE}
+    expose:
+      - "3000"
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+    healthcheck:
+      test: [ "CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3000').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  nginx:
+    image: 8wxewmnzl14gzm6b6v.xuanyuan.run/library/nginx:1.27-alpine
+    command:
+      - /bin/sh
+      - -c
+      - rm -f /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/00-upstream.conf:/etc/nginx/conf.d/00-upstream.conf:ro
+      - ./nginx/10-http.conf:/etc/nginx/conf.d/10-http.conf:ro
+      - ./nginx/20-https.conf:/etc/nginx/conf.d/20-https.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+    depends_on:
+      web:
+        condition: service_healthy
+    restart: unless-stopped

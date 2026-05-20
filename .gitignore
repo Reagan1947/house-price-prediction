@@ -1,0 +1,210 @@
+# =============================================================================
+# Monorepo — merged from house-price-markting-service, house-price-prediction-service,
+# house-price-prediction-web, and root defaults
+# =============================================================================
+
+# --- macOS ---
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+*.icloud
+
+# --- Windows ---
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# --- IntelliJ IDEA / JetBrains (shared with PyCharm, WebStorm, etc.) ---
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries/
+.idea/**/shelf/
+.idea/**/aws.xml
+.idea/**/contentModel.xml
+.idea/**/dataSources/
+.idea/**/dataSources.local.xml
+.idea/**/sqlDataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
+.idea/**/dbnavigator.xml
+.idea/httpRequests/
+.idea/**/gradle.xml
+.idea/**/libraries/
+.idea/modules.xml
+.idea/jarRepositories.xml
+.idea/compiler.xml
+.idea/misc.xml
+.idea/vcs.xml
+.idea/**/copilot*
+.idea/caches/
+.idea/shelf/
+atlassian-ide-plugin.xml
+
+# --- PyCharm / Python tooling (IDE & local caches) ---
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+*.py[cod]
+*$py.class
+*.egg
+*.egg-info/
+.eggs/
+*.manifest
+*.spec
+pip-log.txt
+pip-delete-this-directory.txt
+ipython_config.py
+.scrapy
+celerybeat-schedule
+celerybeat.pid
+.spyderproject
+.spyproject
+.ropeproject
+/site
+cython_debug/
+
+# --- Other editors ---
+*.swp
+*.swo
+*~
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+.cursor/
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+
+# STS / NetBeans / Gradle (Java)
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# --- Logs ---
+*.log
+logs/
+**/backend/log/**
+
+# --- Env & secrets (keep *.example templates) ---
+.env
+.env.*
+.env.local
+!.env.example
+!**/.env.example
+!**/.env.server.example
+**/.env.local
+deploy/.env
+house-price-prediction-service/backend/.env
+house-price-prediction-service/deploy/docker-compose/.env.server
+house-price-markting-service/deploy/.env
+
+# Spring local / secret config (marketing service)
+house-price-markting-service/src/main/resources/application-dev.yml
+house-price-markting-service/src/main/resources/application-prod.yml
+house-price-markting-service/src/main/resources/application-local.yml
+house-price-markting-service/src/main/resources/application-local.yaml
+house-price-markting-service/src/main/resources/application-*.local.yml
+house-price-markting-service/src/main/resources/application-*.local.yaml
+house-price-markting-service/src/main/resources/application-secret.yml
+house-price-markting-service/src/main/resources/application-secret.yaml
+house-price-markting-service/src/main/resources/secrets.yml
+house-price-markting-service/src/main/resources/secrets.yaml
+
+# Certificates & keys
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.crt
+credentials.json
+secrets.json
+secrets/
+
+# Docker Compose local overrides
+docker-compose.override.yml
+house-price-markting-service/deploy/docker-compose.override.yml
+
+# --- Java / Maven (house-price-markting-service) ---
+**/HELP.md
+**/target/
+!**/src/main/**/target/
+!**/src/test/**/target/
+**/build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+!**/.mvn/wrapper/maven-wrapper.jar
+
+# --- Python (house-price-prediction-service, house-price-preidiction-model) ---
+venv/
+.venv/
+.python-version
+.ruff_cache/
+.pytest_cache/
+**/__pycache__/**
+.claude/
+.serena/
+.agents/
+.superpowers/
+superpowers/
+
+# --- Node / Next.js (house-price-prediction-web) ---
+**/node_modules/
+**/.pnp
+.pnp.*
+**/.yarn/*
+!**/.yarn/patches
+!**/.yarn/plugins
+!**/.yarn/releases
+!**/.yarn/versions
+**/coverage/
+**/.next/
+**/out/
+**/build/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.vercel
+*.tsbuildinfo
+next-env.d.ts
+
+# TLS certs under web deploy (keep .gitkeep)
+house-price-prediction-web/deploy/certs/*
+!house-price-prediction-web/deploy/certs/.gitkeep
+/.DS_Store

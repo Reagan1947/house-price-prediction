@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.com.housepriceprediction.module.dashboard.mapper.HouseRecordMapper">
+
+    <resultMap id="BaseResultMap" type="cn.com.housepriceprediction.module.dashboard.entity.DO.HouseRecord">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="squareFootage" column="square_footage" jdbcType="DECIMAL"/>
+        <result property="bedrooms" column="bedrooms" jdbcType="INTEGER"/>
+        <result property="bathrooms" column="bathrooms" jdbcType="DECIMAL"/>
+        <result property="yearBuilt" column="year_built" jdbcType="INTEGER"/>
+        <result property="lotSize" column="lot_size" jdbcType="DECIMAL"/>
+        <result property="distanceToCityCenter" column="distance_to_city_center" jdbcType="DECIMAL"/>
+        <result property="schoolRating" column="school_rating" jdbcType="DECIMAL"/>
+        <result property="price" column="price" jdbcType="DECIMAL"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="DashboardFilter">
+        <where>
+            <if test="request.minId != null">AND id &gt;= #{request.minId}</if>
+            <if test="request.maxId != null">AND id &lt;= #{request.maxId}</if>
+            <if test="request.minSquareFootage != null">AND square_footage &gt;= #{request.minSquareFootage}</if>
+            <if test="request.maxSquareFootage != null">AND square_footage &lt;= #{request.maxSquareFootage}</if>
+            <if test="request.minBedrooms != null">AND bedrooms &gt;= #{request.minBedrooms}</if>
+            <if test="request.maxBedrooms != null">AND bedrooms &lt;= #{request.maxBedrooms}</if>
+            <if test="request.minBathrooms != null">AND bathrooms &gt;= #{request.minBathrooms}</if>
+            <if test="request.maxBathrooms != null">AND bathrooms &lt;= #{request.maxBathrooms}</if>
+            <if test="request.minYearBuilt != null">AND year_built &gt;= #{request.minYearBuilt}</if>
+            <if test="request.maxYearBuilt != null">AND year_built &lt;= #{request.maxYearBuilt}</if>
+            <if test="request.minLotSize != null">AND lot_size &gt;= #{request.minLotSize}</if>
+            <if test="request.maxLotSize != null">AND lot_size &lt;= #{request.maxLotSize}</if>
+            <if test="request.minDistanceToCityCenter != null">AND distance_to_city_center &gt;= #{request.minDistanceToCityCenter}</if>
+            <if test="request.maxDistanceToCityCenter != null">AND distance_to_city_center &lt;= #{request.maxDistanceToCityCenter}</if>
+            <if test="request.minSchoolRating != null">AND school_rating &gt;= #{request.minSchoolRating}</if>
+            <if test="request.maxSchoolRating != null">AND school_rating &lt;= #{request.maxSchoolRating}</if>
+            <if test="request.minPrice != null">AND price &gt;= #{request.minPrice}</if>
+            <if test="request.maxPrice != null">AND price &lt;= #{request.maxPrice}</if>
+        </where>
+    </sql>
+
+    <sql id="DashboardFilterAlias">
+        <where>
+            <if test="request.minId != null">AND ${alias}.id &gt;= #{request.minId}</if>
+            <if test="request.maxId != null">AND ${alias}.id &lt;= #{request.maxId}</if>
+            <if test="request.minSquareFootage != null">AND ${alias}.square_footage &gt;= #{request.minSquareFootage}</if>
+            <if test="request.maxSquareFootage != null">AND ${alias}.square_footage &lt;= #{request.maxSquareFootage}</if>
+            <if test="request.minBedrooms != null">AND ${alias}.bedrooms &gt;= #{request.minBedrooms}</if>
+            <if test="request.maxBedrooms != null">AND ${alias}.bedrooms &lt;= #{request.maxBedrooms}</if>
+            <if test="request.minBathrooms != null">AND ${alias}.bathrooms &gt;= #{request.minBathrooms}</if>
+            <if test="request.maxBathrooms != null">AND ${alias}.bathrooms &lt;= #{request.maxBathrooms}</if>
+            <if test="request.minYearBuilt != null">AND ${alias}.year_built &gt;= #{request.minYearBuilt}</if>
+            <if test="request.maxYearBuilt != null">AND ${alias}.year_built &lt;= #{request.maxYearBuilt}</if>
+            <if test="request.minLotSize != null">AND ${alias}.lot_size &gt;= #{request.minLotSize}</if>
+            <if test="request.maxLotSize != null">AND ${alias}.lot_size &lt;= #{request.maxLotSize}</if>
+            <if test="request.minDistanceToCityCenter != null">AND ${alias}.distance_to_city_center &gt;= #{request.minDistanceToCityCenter}</if>
+            <if test="request.maxDistanceToCityCenter != null">AND ${alias}.distance_to_city_center &lt;= #{request.maxDistanceToCityCenter}</if>
+            <if test="request.minSchoolRating != null">AND ${alias}.school_rating &gt;= #{request.minSchoolRating}</if>
+            <if test="request.maxSchoolRating != null">AND ${alias}.school_rating &lt;= #{request.maxSchoolRating}</if>
+            <if test="request.minPrice != null">AND ${alias}.price &gt;= #{request.minPrice}</if>
+            <if test="request.maxPrice != null">AND ${alias}.price &lt;= #{request.maxPrice}</if>
+        </where>
+    </sql>
+
+    <select id="selectMetrics" resultType="cn.com.housepriceprediction.module.dashboard.entity.vo.DashboardMetricsVO">
+        SELECT COUNT(*) AS totalRecords,
+               ROUND(COALESCE(AVG(price), 0), 2) AS avgPrice,
+               ROUND(COALESCE(AVG(price / NULLIF(square_footage, 0)), 0), 2) AS avgPricePerSqFt
+        FROM house_record
+        <include refid="DashboardFilter"/>
+    </select>
+
+    <select id="selectMedianPrice" resultType="java.math.BigDecimal">
+        SELECT ROUND(COALESCE(AVG(price), 0), 2) AS medianPrice
+        FROM (
+            SELECT price,
+                   ROW_NUMBER() OVER (ORDER BY price) AS row_num,
+                   COUNT(*) OVER () AS total_count
+            FROM house_record
+            <include refid="DashboardFilter"/>
+        ) t
+        WHERE row_num IN (FLOOR((total_count + 1) / 2), FLOOR((total_count + 2) / 2))
+    </select>
+
+    <select id="selectPriceDistribution" resultType="cn.com.housepriceprediction.module.dashboard.entity.vo.PriceDistributionPointVO">
+        WITH bounds AS (
+            SELECT MIN(price) AS min_price,
+                   MAX(price) AS max_price
+            FROM house_record
+            <include refid="DashboardFilter"/>
+        ),
+        bucketed AS (
+            SELECT CASE
+                       WHEN b.max_price = b.min_price THEN 0
+                       WHEN h.price = b.max_price THEN #{bucketCount} - 1
+                       ELSE FLOOR((h.price - b.min_price) / ((b.max_price - b.min_price) / #{bucketCount}))
+                   END AS bucket_index,
+                   b.min_price,
+                   b.max_price
+            FROM house_record h
+            CROSS JOIN bounds b
+            <include refid="DashboardFilterAlias">
+                <property name="alias" value="h"/>
+            </include>
+        )
+        SELECT ROUND(min_price + bucket_index * ((max_price - min_price) / #{bucketCount}), 2) AS bucketStart,
+               ROUND(min_price + (bucket_index + 1) * ((max_price - min_price) / #{bucketCount}), 2) AS bucketEnd,
+               COUNT(*) AS count
+        FROM bucketed
+        GROUP BY bucket_index, min_price, max_price
+        ORDER BY bucket_index ASC
+    </select>
+
+    <select id="selectPriceSquareScatter" resultType="cn.com.housepriceprediction.module.dashboard.entity.vo.PriceSquareScatterPointVO">
+        SELECT square_footage AS squareFootage,
+               price AS price
+        FROM house_record
+        <include refid="DashboardFilter"/>
+        ORDER BY id ASC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectPriceYearTrend" resultType="cn.com.housepriceprediction.module.dashboard.entity.vo.PriceYearTrendPointVO">
+        SELECT year_built AS yearBuilt,
+               ROUND(AVG(price), 2) AS avgPrice,
+               COUNT(*) AS count
+        FROM house_record
+        <include refid="DashboardFilter"/>
+        GROUP BY year_built
+        ORDER BY year_built ASC
+    </select>
+
+    <sql id="SegmentGroupExprs">
+        <choose>
+            <when test="dimension.name() == 'BEDROOMS'">
+                CAST(bedrooms AS CHAR) AS group_key,
+                CAST(bedrooms AS CHAR) AS group_label
+            </when>
+            <when test="dimension.name() == 'BATHROOMS'">
+                CAST(bathrooms AS CHAR) AS group_key,
+                CAST(bathrooms AS CHAR) AS group_label
+            </when>
+            <when test="dimension.name() == 'YEAR_BUILT_DECADE'">
+                CAST(FLOOR(year_built / 10) * 10 AS CHAR) AS group_key,
+                CONCAT(FLOOR(year_built / 10) * 10, 's') AS group_label
+            </when>
+            <when test="dimension.name() == 'SCHOOL_RATING_BAND'">
+                CAST(FLOOR(school_rating / 2) * 2 AS CHAR) AS group_key,
+                CONCAT(
+                    FLOOR(school_rating / 2) * 2,
+                    '-',
+                    LEAST(FLOOR(school_rating / 2) * 2 + 2, 10)
+                ) AS group_label
+            </when>
+            <when test="dimension.name() == 'DISTANCE_BAND'">
+                CAST(FLOOR(distance_to_city_center / 2) * 2 AS CHAR) AS group_key,
+                CASE
+                    WHEN FLOOR(distance_to_city_center / 2) * 2 &gt;= 10
+                        THEN CONCAT(FLOOR(distance_to_city_center / 2) * 2, '+')
+                    ELSE CONCAT(
+                        FLOOR(distance_to_city_center / 2) * 2,
+                        '-',
+                        FLOOR(distance_to_city_center / 2) * 2 + 2
+                    )
+                END AS group_label
+            </when>
+        </choose>
+    </sql>
+
+    <sql id="SegmentGroupedCte">
+        WITH filtered AS (
+            SELECT
+                <include refid="SegmentGroupExprs"/>,
+                price
+            FROM house_record
+            <include refid="DashboardFilter"/>
+        ),
+        ranked AS (
+            SELECT
+                group_key,
+                group_label,
+                price,
+                ROW_NUMBER() OVER (PARTITION BY group_key ORDER BY price) AS rn,
+                COUNT(*) OVER (PARTITION BY group_key) AS cnt
+            FROM filtered
+        ),
+        percentiles AS (
+            SELECT
+                group_key,
+                group_label,
+                cnt AS count,
+                ROUND(AVG(price), 2) AS mean,
+                ROUND(COALESCE(STDDEV_POP(price), 0), 2) AS std_dev,
+                ROUND(AVG(CASE WHEN rn IN (
+                    FLOOR((cnt + 1) / 2), FLOOR((cnt + 2) / 2)
+                ) THEN price END), 2) AS median,
+                ROUND(MAX(CASE WHEN rn = GREATEST(1, CEIL(cnt * 0.25)) THEN price END), 2) AS p25,
+                ROUND(MAX(CASE WHEN rn = GREATEST(1, CEIL(cnt * 0.75)) THEN price END), 2) AS p75
+            FROM ranked
+            GROUP BY group_key, group_label, cnt
+        )
+    </sql>
+
+    <select id="selectSegmentTableGroups"
+            resultType="cn.com.housepriceprediction.module.segment.entity.vo.SegmentGroupRowVO">
+        <include refid="SegmentGroupedCte"/>
+        SELECT
+            group_label AS `group`,
+            group_key AS groupKey,
+            count,
+            median,
+            mean,
+            p25,
+            p75,
+            std_dev AS stdDev
+        FROM percentiles
+        ORDER BY CAST(group_key AS DECIMAL(20, 4)) ASC, group_key ASC
+    </select>
+
+    <select id="selectSegmentChartGroups"
+            resultType="cn.com.housepriceprediction.module.segment.entity.vo.SegmentChartPointVO">
+        <include refid="SegmentGroupedCte"/>
+        SELECT
+            group_label AS `group`,
+            group_key AS groupKey,
+            count,
+            median AS medianPrice
+        FROM percentiles
+        ORDER BY CAST(group_key AS DECIMAL(20, 4)) ASC, group_key ASC
+    </select>
+
+    <select id="countByFilter" resultType="java.lang.Long">
+        SELECT COUNT(*) AS recordCount
+        FROM house_record
+        <include refid="DashboardFilter"/>
+    </select>
+
+    <select id="selectBaselineFeatures"
+            resultType="cn.com.housepriceprediction.module.whatif.entity.vo.HouseFeaturesVO">
+        SELECT
+            (SELECT ROUND(COALESCE(AVG(square_footage), 0), 2)
+             FROM (
+                 SELECT square_footage,
+                        ROW_NUMBER() OVER (ORDER BY square_footage) AS row_num,
+                        COUNT(*) OVER () AS total_count
+                 FROM house_record
+                 <include refid="DashboardFilter"/>
+             ) t
+             WHERE row_num IN (FLOOR((total_count + 1) / 2), FLOOR((total_count + 2) / 2))
+            ) AS squareFootage,
+
+            (SELECT ROUND(COALESCE(AVG(bedrooms), 0), 0)
+             FROM (
+                 SELECT bedrooms,
+                        ROW_NUMBER() OVER (ORDER BY bedrooms) AS row_num,
+                        COUNT(*) OVER () AS total_count
+                 FROM house_record
+                 <include refid="DashboardFilter"/>
+             ) t
+             WHERE row_num IN (FLOOR((total_count + 1) / 2), FLOOR((total_count + 2) / 2))
+            ) AS bedrooms,
+
+            (SELECT ROUND(COALESCE(AVG(bathrooms), 0), 1)
+             FROM (
+                 SELECT bathrooms,
+                        ROW_NUMBER() OVER (ORDER BY bathrooms) AS row_num,
+                        COUNT(*) OVER () AS total_count
+                 FROM house_record
+                 <include refid="DashboardFilter"/>
+             ) t
+             WHERE row_num IN (FLOOR((total_count + 1) / 2), FLOOR((total_count + 2) / 2))
+            ) AS bathrooms,
+
+            (SELECT ROUND(COALESCE(AVG(year_built), 0), 0)
+             FROM (
+                 SELECT year_built,
+                        ROW_NUMBER() OVER (ORDER BY year_built) AS row_num,
+                        COUNT(*) OVER () AS total_count
+                 FROM house_record
+                 <include refid="DashboardFilter"/>
+             ) t
+             WHERE row_num IN (FLOOR((total_count + 1) / 2), FLOOR((total_count + 2) / 2))
+            ) AS yearBuilt,
+
+            (SELECT ROUND(COALESCE(AVG(lot_size), 0), 2)
+             FROM (
+                 SELECT lot_size,
+                        ROW_NUMBER() OVER (ORDER BY lot_size) AS row_num,
+                        COUNT(*) OVER () AS total_count
+                 FROM house_record
+                 <include refid="DashboardFilter"/>
+             ) t
+             WHERE row_num IN (FLOOR((total_count + 1) / 2), FLOOR((total_count + 2) / 2))
+            ) AS lotSize,
+
+            (SELECT ROUND(COALESCE(AVG(distance_to_city_center), 0), 2)
+             FROM (
+                 SELECT distance_to_city_center,
+                        ROW_NUMBER() OVER (ORDER BY distance_to_city_center) AS row_num,
+                        COUNT(*) OVER () AS total_count
+                 FROM house_record
+                 <include refid="DashboardFilter"/>
+             ) t
+             WHERE row_num IN (FLOOR((total_count + 1) / 2), FLOOR((total_count + 2) / 2))
+            ) AS distanceToCityCenter,
+
+            (SELECT ROUND(COALESCE(AVG(school_rating), 0), 2)
+             FROM (
+                 SELECT school_rating,
+                        ROW_NUMBER() OVER (ORDER BY school_rating) AS row_num,
+                        COUNT(*) OVER () AS total_count
+                 FROM house_record
+                 <include refid="DashboardFilter"/>
+             ) t
+             WHERE row_num IN (FLOOR((total_count + 1) / 2), FLOOR((total_count + 2) / 2))
+            ) AS schoolRating
+    </select>
+</mapper>

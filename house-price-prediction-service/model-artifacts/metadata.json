@@ -1,0 +1,27 @@
+{
+  "trained_at_utc": "2026-05-15T13:02:57.697561+00:00",
+  "data_path": "machine-learning/data/House Price Dataset.csv",
+  "target_column": "price",
+  "dropped_columns": [
+    "id"
+  ],
+  "feature_columns": [
+    "square_footage",
+    "bedrooms",
+    "bathrooms",
+    "year_built",
+    "lot_size",
+    "distance_to_city_center",
+    "school_rating"
+  ],
+  "row_count": 50,
+  "split": {
+    "train_rows": 34,
+    "validation_rows": 8,
+    "test_rows": 8,
+    "test_size": 0.15,
+    "val_size": 0.15
+  },
+  "log_transform_target": false,
+  "selected_model": "linear_regression"
+}

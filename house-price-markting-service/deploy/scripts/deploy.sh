@@ -1,0 +1,146 @@
+#!/bin/sh
+
+set -e
+
+# 环境变量（可选）：
+#   IMAGE                 必填，流水线注入的完整镜像名
+#   DEPLOY_WORKDIR        检出目录，默认 /opt/house-price-markting-service
+#   GIT_BRANCH            同步分支；未设置时优先 origin 默认分支，否则 main
+#   COMPOSE_PROJECT_NAME  docker compose -p 项目名，默认 house-price-markting-service
+#   GIT_REPO              代码仓库地址；未设置时使用下方占位，部署前请改为真实地址
+#   DOCKER_REGISTRY       镜像仓库地址（docker login 用），默认阿里云成都仓
+
+# ==============================
+# 基础配置
+# ==============================
+GIT_REPO="${GIT_REPO:-git@codeup.aliyun.com:6a04164bad0a337b92d9ef0c/house-price-markting-service.git}"
+REPO_ROOT="${DEPLOY_WORKDIR:-/opt/house-price-markting-service}"
+COMPOSE_FILE="${REPO_ROOT}/deploy/docker-compose.yml"
+LEGACY_CONTAINER_NAME="house-price-markting-service"
+COMPOSE_PROJECT="${COMPOSE_PROJECT_NAME:-house-price-markting-service}"
+DOCKER_REGISTRY="${DOCKER_REGISTRY:-crpi-w9osq47ototoq3xh.cn-chengdu.personal.cr.aliyuncs.com}"
+
+echo "======================================"
+echo "开始部署（Compose）"
+echo "镜像: ${IMAGE}"
+echo "代码目录: ${REPO_ROOT}"
+echo "Compose: ${COMPOSE_FILE}"
+echo "======================================"
+
+if [ -z "${IMAGE}" ]; then
+  echo "错误：未设置 IMAGE（例如 registry/namespace/repo:tag）"
+  exit 1
+fi
+
+# ==============================
+# 检查 Docker
+# ==============================
+if ! command -v docker >/dev/null 2>&1; then
+  echo "错误：Docker 未安装"
+  exit 1
+fi
+
+if ! docker compose version >/dev/null 2>&1; then
+  echo "错误：未安装 Docker Compose 插件（docker compose）"
+  exit 1
+fi
+
+# ==============================
+# 1. 拉取 deploy 相关代码（Git 稀疏检出）
+# ==============================
+echo ""
+echo "1. 同步 deploy 配置（sparse checkout: deploy）..."
+
+mkdir -p "${REPO_ROOT}"
+
+if [ ! -d "${REPO_ROOT}/.git" ]; then
+  if [ -n "$(ls -A "${REPO_ROOT}" 2>/dev/null)" ]; then
+    echo "错误：${REPO_ROOT} 已存在且非空，无法首次 git clone。请清空目录或设置 DEPLOY_WORKDIR。"
+    exit 1
+  fi
+  echo "首次克隆仓库（仅检出 deploy 目录）..."
+  git clone --depth 1 --filter=blob:none --sparse "${GIT_REPO}" "${REPO_ROOT}"
+  (cd "${REPO_ROOT}" && git sparse-checkout set deploy)
+else
+  echo "更新已有仓库..."
+  cd "${REPO_ROOT}"
+  git remote set-url origin "${GIT_REPO}" 2>/dev/null || git remote add origin "${GIT_REPO}"
+  if ! git sparse-checkout list >/dev/null 2>&1; then
+    git sparse-checkout init --cone
+  fi
+  git sparse-checkout set deploy
+  git fetch origin --depth 1
+
+  SYNC_BRANCH="${GIT_BRANCH:-}"
+  if [ -z "${SYNC_BRANCH}" ]; then
+    SYNC_BRANCH="$(git symbolic-ref -q --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||')"
+  fi
+  if [ -z "${SYNC_BRANCH}" ]; then
+    SYNC_BRANCH="main"
+  fi
+
+  git checkout "${SYNC_BRANCH}"
+  git reset --hard "origin/${SYNC_BRANCH}"
+fi
+
+if [ ! -f "${COMPOSE_FILE}" ]; then
+  echo "错误：未找到 ${COMPOSE_FILE}"
+  exit 1
+fi
+
+# ==============================
+# 查看当前运行状态
+# ==============================
+echo ""
+echo "2. 检查当前 Compose 服务..."
+docker compose -p "${COMPOSE_PROJECT}" -f "${COMPOSE_FILE}" ps 2>/dev/null || true
+
+# ==============================
+# 登录镜像仓库
+# ==============================
+echo ""
+echo "3. 登录镜像仓库..."
+
+if [ -z "${DOCKER_USERNAME}" ] || [ -z "${DOCKER_PASSWORD}" ]; then
+  echo "错误：DOCKER_USERNAME 或 DOCKER_PASSWORD 未设置"
+  exit 1
+fi
+
+echo "${DOCKER_PASSWORD}" | docker login \
+  --username "${DOCKER_USERNAME}" \
+  --password-stdin "${DOCKER_REGISTRY}"
+
+# ==============================
+# 兼容旧版 docker run 单容器
+# ==============================
+if docker ps -a --format '{{.Names}}' | grep -w "${LEGACY_CONTAINER_NAME}" >/dev/null 2>&1; then
+  echo ""
+  echo "4. 清理旧版独立容器 ${LEGACY_CONTAINER_NAME}..."
+  docker stop "${LEGACY_CONTAINER_NAME}" || true
+  docker rm "${LEGACY_CONTAINER_NAME}" || true
+fi
+
+# ==============================
+# 拉取镜像并启动（Compose）
+# ==============================
+echo ""
+echo "5. 拉取镜像并启动 Compose 服务..."
+export IMAGE
+
+cd "${REPO_ROOT}"
+docker compose -p "${COMPOSE_PROJECT}" -f "${COMPOSE_FILE}" pull
+docker compose -p "${COMPOSE_PROJECT}" -f "${COMPOSE_FILE}" up -d --no-build --remove-orphans
+
+# ==============================
+# 输出结果
+# ==============================
+echo ""
+echo "6. 部署完成，当前服务："
+docker compose -p "${COMPOSE_PROJECT}" -f "${COMPOSE_FILE}" ps
+
+echo ""
+echo "7. 当前 house-price-markting-service 镜像："
+docker inspect --format='{{.Config.Image}}' house-price-markting-service 2>/dev/null || echo "（未找到名为 house-price-markting-service 的容器，请检查 compose 中的 container_name）"
+
+echo ""
+echo "部署成功。"

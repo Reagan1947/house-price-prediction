@@ -1,0 +1,128 @@
+server:
+  port: 8003
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: house-price-markting-service
+  profiles:
+    active: dev
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://127.0.0.1:3306/ftm?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+  data:
+    ############### Redis ###############
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:127.0.0.1}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      database: ${SPRING_DATA_REDIS_DATABASE:0}
+      password: ${SPRING_DATA_REDIS_PASSWORD:}
+      # 连接超时时间 10 秒
+      timeout: 10000
+      # 配置连接池
+      jedis:
+        pool:
+          enabled: true
+          # 最小空闲连接数
+          min-idle: 1
+          # 最大空闲连接数
+          max-idle: 10
+          # 最大连接数，-1表示没有限制
+          max-active: 50
+          # 最大等待时间，-1表示没有限制
+          max-wait: -1ms
+          # 断开连接的间隔时间 5 秒
+          time-between-eviction-runs: 5000
+################ MyBatis-Plus ###############
+mybatis-plus:
+  # mapper 文件位置
+  mapper-locations: classpath:/mapper/*.xml
+  configuration:
+    # 开启驼峰命名
+    map-underscore-to-camel-case: true
+    # 日志配置
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  # 全局配置
+  global-config:
+    # 是否开启启动打印的 LOGO
+    banner: false
+    db-config:
+      # 表名是否使用下划线命名
+      table-underline: true
+      # 全局逻辑删除的实体字段名
+      logic-delete-field: isDelete
+      # 逻辑已删除值（默认为 1）
+      logic-delete-value: 1
+      # 逻辑未删除值（默认为 0）
+      logic-not-delete-value: 0
+
+################ 分布式锁 ###############
+redisson:
+  enable: true
+  client: redis://${spring.data.redis.host}:${spring.data.redis.port}
+  database: ${spring.data.redis.database}
+  password: ${spring.data.redis.password}
+  timeout: 10000
+
+################ Sa-Token ###############
+sa-token:
+  # token 名称（同时也是 cookie 名称）
+  token-name: silasToken
+  # token 前缀
+  token-prefix: Bearer
+  # jwt秘钥
+  jwt-secret-key: ${SA_TOKEN_JWT_SECRET_KEY:}
+  # token 有效期（单位：秒） 1 天，-1 代表永久有效
+  timeout: 86400
+  # token 最低活跃频率（单位：秒），如果 token 超过此时间没有访问系统就会被冻结，默认-1 代表不限制，永不冻结
+  active-timeout: -1
+  # 是否允许同一账号多地同时登录 （为 true 时允许一起登录, 为 false 时新登录挤掉旧登录）
+  is-concurrent: true
+  # 在多人登录同一账号时，是否共用一个 token （为 true 时所有登录共用一个 token, 为 false 时每次登录新建一个 token）
+  is-share: true
+  # token 风格（默认可取值：uuid、simple-uuid、random-32、random-64、random-128、tik）
+  token-style: uuid
+  # 是否输出操作日志
+  is-log: true
+  is-read-header: true
+  is-read-cookie: false
+
+################ 接口文档 ###############
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'default'
+      paths-to-match: '/**'
+      packages-to-scan: cn.com.housepriceprediction
+
+################ 外部认证 ###############
+auth:
+  verify-url: http://114.67.76.100:8001/api/v1/auth/verify
+  connect-timeout: 3s
+  read-timeout: 3s
+
+################ 外部预测 ###############
+prediction:
+  predict-url: http://114.67.76.100:8001/api/v1/predict
+  connect-timeout: 5s
+  read-timeout: 10s
+  batch-max-size: 50
+# Swagger 的 增强配置，不需要增强可以不配
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+    
+################ 日志 ###############
+logging:
+  config: classpath:logback-spring.xml
+  file:
+    path: ./logs

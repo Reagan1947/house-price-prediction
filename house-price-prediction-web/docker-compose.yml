@@ -1,0 +1,3 @@
+# 服务定义在 deploy/docker-compose.yml；在仓库根目录执行 docker compose 即可（本文件为 include 入口）。
+include:
+  - deploy/docker-compose.yml
