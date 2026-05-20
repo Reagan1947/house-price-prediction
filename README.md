@@ -1,9 +1,7 @@
 <h1 align="center">
   <br>
-  <img src="https://github.com/Reagan1947/KityMinder-Plus/blob/main/mind-icon.png?raw=true" alt="House Price Prediction" width="170">
-  <br>
-  House Price Prediction
-  <br>
+  <img src="https://github.com/Reagan1947/house-price-prediction/blob/main/house-price-icon.png?raw=true" alt="House Price Prediction" width="300">
+  <!-- House Price Prediction -->
 </h1>
 
 <h4 align="center" font-weight:bold;">Predicting and analyzing the real estate market.</h4>
