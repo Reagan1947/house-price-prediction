@@ -1,3 +1,17 @@
+<h1 align="center">
+  <br>
+  <img src="https://github.com/Reagan1947/KityMinder-Plus/blob/main/mind-icon.png?raw=true" alt="House Price Prediction" width="170">
+  <br>
+  House Price Prediction
+  <br>
+</h1>
+
+<h4 align="center" font-weight:bold;">Predicting and analyzing the real estate market.</h4>
+<p align="center">
+<img src="https://img.shields.io/badge/License-MIT-%23373737">
+<img src="https://img.shields.io/badge/Dependency-Next.JS-lightgrey">
+</p>
+
 # House Price Prediction
 
 ## 1.1 Summary
