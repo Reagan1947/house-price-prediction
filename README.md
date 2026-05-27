@@ -41,4 +41,4 @@ This project uses the [wcag-aaa-web-design](https://github.com/simonplmak-cloud/
 This project is licensed under the MIT License.
 
 ## 1.4 Preview
-The project can be accessed online via IP (http://114.67.95.94/)
+The project can be accessed online via address [https:house-price-prediction.com.cn](https:house-price-prediction.com.cn)
